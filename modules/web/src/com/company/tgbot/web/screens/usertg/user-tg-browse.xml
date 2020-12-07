@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd"
+        xmlns:c="http://schemas.haulmont.com/cuba/screen/jpql_condition.xsd"
+        caption="msg://userTgBrowse.caption"
+        focusComponent="userTgsTable"
+        messagesPack="com.company.tgbot.web.screens.usertg">
+    <data readOnly="true">
+        <collection id="userTgsDc"
+                    class="com.company.tgbot.entity.UserTg">
+            <view extends="_local"/>
+            <loader id="userTgsDl">
+                <query>
+                    <![CDATA[select e from tgbot_UserTg e]]>
+                </query>
+            </loader>
+        </collection>
+    </data>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="userTgsTable"
+            spacing="true">
+        <filter id="filter"
+                applyTo="userTgsTable"
+                dataLoader="userTgsDl">
+            <properties include=".*"/>
+        </filter>
+        <groupTable id="userTgsTable"
+                    width="100%"
+                    dataContainer="userTgsDc">
+            <actions>
+                <action id="create" type="create"/>
+                <action id="edit" type="edit"/>
+                <action id="remove" type="remove"/>
+            </actions>
+            <columns>
+                <column id="userName"/>
+                <column id="firstName"/>
+                <column id="lastName"/>
+                <column id="phoneNumber"/>
+                <column id="userId"/>
+                <column id="message"/>
+            </columns>
+            <rowsCount/>
+            <buttonsPanel id="buttonsPanel"
+                          alwaysVisible="true">
+                <button id="createBtn" action="userTgsTable.create"/>
+                <button id="editBtn" action="userTgsTable.edit"/>
+                <button id="removeBtn" action="userTgsTable.remove"/>
+            </buttonsPanel>
+        </groupTable>
+        <hbox id="lookupActions" spacing="true" visible="false">
+            <button action="lookupSelectAction"/>
+            <button action="lookupCancelAction"/>
+        </hbox>
+    </layout>
+</window>

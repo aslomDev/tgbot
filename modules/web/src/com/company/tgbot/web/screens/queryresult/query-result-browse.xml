@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd"
+        xmlns:c="http://schemas.haulmont.com/cuba/screen/jpql_condition.xsd"
+        caption="msg://queryResultBrowse.caption"
+        focusComponent="queryResultsTable"
+        messagesPack="com.company.tgbot.web.screens.queryresult">
+    <data readOnly="true">
+        <collection id="queryResultsDc"
+                    class="com.haulmont.cuba.core.entity.QueryResult">
+            <view extends="_local"/>
+            <loader id="queryResultsDl">
+                <query>
+                    <![CDATA[select e from sys$QueryResult e]]>
+                </query>
+            </loader>
+        </collection>
+    </data>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="queryResultsTable"
+            spacing="true">
+        <filter id="filter"
+                applyTo="queryResultsTable"
+                dataLoader="queryResultsDl">
+            <properties include=".*"/>
+        </filter>
+        <groupTable id="queryResultsTable"
+                    width="100%"
+                    dataContainer="queryResultsDc">
+            <actions>
+                <action id="create" type="create"/>
+                <action id="edit" type="edit"/>
+                <action id="remove" type="remove"/>
+            </actions>
+            <columns>
+                <column id="sessionId"/>
+                <column id="queryKey"/>
+                <column id="entityId"/>
+                <column id="stringEntityId"/>
+                <column id="intEntityId"/>
+                <column id="longEntityId"/>
+            </columns>
+            <rowsCount/>
+            <buttonsPanel id="buttonsPanel"
+                          alwaysVisible="true">
+                <button id="createBtn" action="queryResultsTable.create"/>
+                <button id="editBtn" action="queryResultsTable.edit"/>
+                <button id="removeBtn" action="queryResultsTable.remove"/>
+            </buttonsPanel>
+        </groupTable>
+        <hbox id="lookupActions" spacing="true" visible="false">
+            <button action="lookupSelectAction"/>
+            <button action="lookupCancelAction"/>
+        </hbox>
+    </layout>
+</window>
