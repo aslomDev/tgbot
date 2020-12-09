@@ -1,89 +1,116 @@
 package com.company.tgbot.tgConfig;
 
 import com.company.tgbot.service.UserTgService;
-import com.haulmont.cuba.core.global.CommitContext;
+import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.inject.Inject;
+import java.util.HashMap;
+import java.util.Map;
 
-@Component
-public class MyTelegramBot extends TelegramLongPollingBot {
+//@Component
+public class MyTelegramBot extends TelegramLongPollingCommandBot {
+    private Logger logger = LoggerFactory.getLogger(MyTelegramBot.class);
 
-//    private String botUserName;
-//    private String botToken;
+    private final String BOT_NAME;
+    private final String BOT_TOKEN;
 
-    @Autowired
-    private UserTgService userTgService;
+    @Getter
+    private static final Settings defaultSettings = new Settings(1, 15,1);
+    private final NonCommand nonCommand;
 
+    /**
+     * Настройки файла для разных пользователей. Ключ - уникальный id чата
+     */
+    @Getter
+    private static Map<Long, Settings> userSettings;
 
-
-    @Override
-    public void onUpdateReceived(Update update) {
-
-
-           if (update.hasMessage()){
-               Message message = update.getMessage();
-               Long id = message.getChatId();
-               SendMessage sendMessage = new SendMessage();
-               sendMessage.setChatId(String.valueOf(id));
-               sendMessage.setText("salom");
-               try {
-                   execute(sendMessage);
-                   userTgService.createUser(update);
-               } catch (TelegramApiException e) {
-                   e.printStackTrace();
-               }
-           }
-
-
-
-    }
-
-
-
-//    public MyTelegramBot(DefaultBotOptions botOptions) {
-//        super(botOptions);
-//    }
-
-//    public MyTelegramBot(DefaultBotOptions options) {
-//        super(options);
-//    }
-
-    @Override
-    public String getBotUsername() {
-        return "lolMessagBot";
+    public Bot(String botName, String botToken) {
+        super();
+        logger.debug("Конструктор суперкласса отработал");
+        this.BOT_NAME = botName;
+        this.BOT_TOKEN = botToken;
+        logger.debug("Имя и токен присвоены");
+        this.nonCommand = new NonCommand();
+        logger.debug("Класс обработки сообщения, не являющегося командой, создан");
+        register(new StartCommand("start", "Старт"));
+        logger.debug("Команда start создана");
+        register(new PlusCommand("plus", "Сложение"));
+        logger.debug("Команда plus создана");
+        register(new MinusCommand("minus", "Вычитание"));
+        logger.debug("Команда minus создана");
+        register(new PlusMinusCommand("plusminus", "Сложение и вычитание"));
+        logger.debug("Команда plusminus создана");
+        register(new HelpCommand("help","Помощь"));
+        logger.debug("Команда help создана");
+        register(new SettingsCommand("settings", "Мои настройки"));
+        logger.debug("Команда settings создана");
+        userSettings = new HashMap<>();
+        logger.info("Бот создан!");
     }
 
     @Override
     public String getBotToken() {
-        return "1487031714:AAHetBYdfukPU3k4KbE-eVGOdEJnKNQE8uQ";
+        return BOT_TOKEN;
     }
 
-    public void message(SendMessage sendMessage){
+    @Override
+    public String getBotUsername() {
+        return BOT_NAME;
+    }
 
+    /**
+     * Ответ на запрос, не являющийся командой
+     */
+    @Override
+    public void processNonCommandUpdate(Update update) {
+        Message msg = update.getMessage();
+        Long chatId = msg.getChatId();
+        String userName = Utils.getUserName(msg);
+
+        String answer = nonCommand.nonCommandExecute(chatId, userName, msg.getText());
+        setAnswer(chatId, userName, answer);
+    }
+
+    /**
+     * Получение настроек по id чата. Если ранее для этого чата в ходе сеанса работы бота настройки не были установлены,
+     * используются настройки по умолчанию
+     */
+    public static Settings getUserSettings(Long chatId) {
+        Map<Long, Settings> userSettings = Bot.getUserSettings();
+        Settings settings = userSettings.get(chatId);
+        if (settings == null) {
+            return defaultSettings;
+        }
+        return settings;
+    }
+
+    /**
+     * Отправка ответа
+     * @param chatId id чата
+     * @param userName имя пользователя
+     * @param text текст ответа
+     */
+    private void setAnswer(Long chatId, String userName, String text) {
+        SendMessage answer = new SendMessage();
+        answer.setText(text);
+        answer.setChatId(chatId.toString());
+        logger.error(answer.getText()+"111");
         try {
-            execute(sendMessage);
+            execute(answer);
         } catch (TelegramApiException e) {
+            logger.error(String.format("Ошибка %s. Сообщение, не являющееся командой. Пользователь: %s", e.getMessage(),
+                    userName));
             e.printStackTrace();
         }
     }
-
-//    public String getBotUserName() {
-//        return botUserName;
-//    }
-//
-//    public void setBotUserName(String botUserName) {
-//        this.botUserName = botUserName;
-//    }
-//
-//    public void setBotToken(String botToken) {
-//        this.botToken = botToken;
-//    }
 }

@@ -4,11 +4,11 @@ buildscript {
     repositories {
         maven {
             url 'https://dl.bintray.com/cuba-platform/main'
-            
+
         }
         jcenter()
 
-        
+
     }
     dependencies {
         classpath "com.haulmont.gradle:cuba-plugin:$cubaVersion"
@@ -47,7 +47,7 @@ configure([globalModule, coreModule, webModule]) {
     dependencies {
             testCompile('org.junit.jupiter:junit-jupiter-api:5.5.2')
             testCompile('org.junit.jupiter:junit-jupiter-engine:5.5.2')
-            testCompile('org.junit.vintage:junit-vintage-engine:5.5.2')  
+            testCompile('org.junit.vintage:junit-vintage-engine:5.5.2')
         }
 
     task sourceJar(type: Jar) {
@@ -57,7 +57,7 @@ configure([globalModule, coreModule, webModule]) {
 
     artifacts {
         archives sourceJar
-    } 
+    }
     test {
         useJUnitPlatform()
     }
@@ -72,7 +72,9 @@ configure(globalModule) {
         }
 
 
-        compile 'org.telegram:telegrambots-spring-boot-starter:5.0.1'
+        compile 'org.telegram:telegrambots:5.0.1'
+        compile 'org.telegram:telegrambotsextensions:5.0.1'
+        compile 'org.projectlombok:lombok:1.18.16'
     }
 
     entitiesEnhancing {
